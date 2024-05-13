@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "pixel-sim"
+version = "0.1.0"
+description = ""
+authors = ["botamochi6277 <botamochi6277@icloud.com>"]
+readme = "README.md"
+packages = [{ include = "pixel_sim", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.26.4"
+scipy = "^1.13.0"
+matplotlib = "^3.8.4"
+seaborn = "^0.13.2"
+fire = "^0.6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
