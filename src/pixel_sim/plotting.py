@@ -13,6 +13,7 @@ def plot_rgb_curve(
     green: np.ndarray,
     blue: np.ndarray,
     ax: Axes | None = None,
+    show_legend:bool = False
 ):
     if ax is None:
         ax = plt.gca()
@@ -21,7 +22,8 @@ def plot_rgb_curve(
     ax.plot(t, green, label="green", color="#6f9654")
     ax.plot(t, blue, label="blue", color="#43459d")
     ax.plot(t, luminance, label="luminance", linestyle="dotted", color="#a0a0a0")
-    # ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+    if show_legend:
+        ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
     # ax.set_ylabel("intensity")
 
     return ax
@@ -32,15 +34,16 @@ def plot_color_ribbon(
     red: np.ndarray,
     green: np.ndarray,
     blue: np.ndarray,
+    height:float=1.0,
     ax: Axes | None = None,
 ):
     if ax is None:
         ax = plt.gca()
     for i in range(0, len(t), 1):
         ax.barh(
-            0,
+            height/2,
             width=1.1 / len(t),
-            height=0.2,
+            height=height,
             left=t[i] - 0.5 / len(t),
             color=(red[i], green[i], blue[i]),
         )
