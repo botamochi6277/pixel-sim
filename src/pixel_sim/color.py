@@ -1,4 +1,14 @@
 import numpy as np
+import seaborn as sns
+
+
+def get_color_of_colormap(cmap_name: str, num: int = 101):
+    # get rgb value from colormap
+    color = sns.color_palette(cmap_name, num)
+    red = np.array([c[0] for c in color])
+    green = np.array([c[1] for c in color])
+    blue = np.array([c[2] for c in color])
+    return red, green, blue
 
 
 def compute_luminance(red: np.ndarray, green: np.ndarray, blue: np.ndarray):

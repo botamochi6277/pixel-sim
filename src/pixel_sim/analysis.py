@@ -1,6 +1,5 @@
 from typing import NamedTuple
 
-import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from scipy.optimize import curve_fit
@@ -11,14 +10,12 @@ class SpectrumParam(NamedTuple):
     f: list[float]
 
 
-def compute_cyclic_param(cmap_name: str, num: int = 64, order: int = 4):
-    # get rgb value from colormap
-    t = np.linspace(0, 1.0, num=num)
-    color = sns.color_palette(cmap_name, num)
-    red = [c[0] for c in color]
-    green = [c[1] for c in color]
-    blue = [c[2] for c in color]
+def compute_cyclic_param(
+    red: np.ndarray, green: np.ndarray, blue: np.ndarray, order: int = 4
+):
 
+    num = len(red)
+    t = np.linspace(0, 1.0, num=num)
     # compute values in freq space
     freq = np.fft.fftfreq(num, d=t[1])
 
@@ -46,13 +43,12 @@ def compute_cyclic_param(cmap_name: str, num: int = 64, order: int = 4):
     )
 
 
-def compute_poly_param(cmap_name: str, num: int = 64, order: int = 6):
+def compute_poly_param(
+    red: np.ndarray, green: np.ndarray, blue: np.ndarray, order: int = 6
+):
     # get rgb value from colormap
+    num = len(red)
     t = np.linspace(0, 1.0, num=num)
-    color = sns.color_palette(cmap_name, num)
-    red = [c[0] for c in color]
-    green = [c[1] for c in color]
-    blue = [c[2] for c in color]
 
     # init weight
     weight = np.ones(num)
