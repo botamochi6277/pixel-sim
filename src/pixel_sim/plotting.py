@@ -13,7 +13,7 @@ def plot_rgb_curve(
     green: np.ndarray,
     blue: np.ndarray,
     ax: Axes | None = None,
-    show_legend:bool = False
+    show_legend: bool = False,
 ):
     if ax is None:
         ax = plt.gca()
@@ -34,15 +34,15 @@ def plot_color_ribbon(
     red: np.ndarray,
     green: np.ndarray,
     blue: np.ndarray,
-    height:float=1.0,
+    height: float = 1.0,
     ax: Axes | None = None,
 ):
     if ax is None:
         ax = plt.gca()
     for i in range(0, len(t), 1):
         ax.barh(
-            height/2,
-            width=1.1 / len(t),
+            height / 2,
+            width=(t[-1] - t[0]) / (len(t) - 1),
             height=height,
             left=t[i] - 0.5 / len(t),
             color=(red[i], green[i], blue[i]),
