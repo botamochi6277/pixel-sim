@@ -3,6 +3,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 from fire import Fire
+from matplotlib.axes import Axes
 from matplotlib.colors import LinearSegmentedColormap
 from PIL import ImageColor
 
@@ -14,10 +15,11 @@ def create_colormap(
     color1: str,
     color2: str,
     color3: str,
-    name="custom",
+    name: str = "custom",
     is_encode: bool = False,
     is_cyclic: bool = False,
     order: int = 4,
+    save_fig: bool = False,
 ):
     rgb1 = np.array(ImageColor.getcolor(color1, "RGB")) / 255
     rgb2 = np.array(ImageColor.getcolor(color2, "RGB")) / 255
@@ -60,10 +62,13 @@ def create_colormap(
         height_ratios=(1, 0.25, 0.25),
     )
 
-    ax = axes[0] if not is_encode else axes[0][0]
+    ax: Axes = axes[0] if not is_encode else axes[0][0]
     pixel_sim.plotting.plot_rgb_curve(
         t2, rgba[:, 0], rgba[:, 1], rgba[:, 2], ax=ax, show_legend=(not is_encode)
     )
+    ax.set_title(name)
+    ax.set_ylim((-0.1, 1.1))
+
     ax = axes[1] if not is_encode else axes[1][0]
     pixel_sim.plotting.plot_color_ribbon(t2, rgba[:, 0], rgba[:, 1], rgba[:, 2], ax=ax)
 
@@ -79,7 +84,7 @@ def create_colormap(
     pixel_sim.plotting.plot_color_ribbon(
         t2, rgb_screen[:, 0], rgb_screen[:, 1], rgb_screen[:, 2], ax=ax
     )
-
+    ax.set_title("screen")
     ax.set_xlim(([-1.1, 1.1]))
 
     if is_encode:
@@ -128,6 +133,7 @@ def create_colormap(
             ax=ax,
             show_legend=is_encode,
         )
+        ax.set_title("fitting")
 
         ax = axes[1][1]
         pixel_sim.plotting.plot_color_ribbon(
@@ -160,9 +166,17 @@ def create_colormap(
             rgb_screen2[:, 2],
             ax=ax,
         )
+        ax.set_title("screen")
+
         ax.set_xlim(([-1.1, 1.1]))
 
     plt.tight_layout()
+
+    if save_fig:
+        img_name = f"{name}.png"
+        fig.savefig(img_name)
+        print(f"{img_name} was written")
+
     plt.show()
 
 
