@@ -5,13 +5,7 @@ import numpy as np
 from fire import Fire
 from matplotlib.collections import PolyCollection
 
-
-def wipe(x: np.ndarray, t: float):
-    # https://numpy.org/doc/stable/reference/generated/numpy.heaviside.html
-
-    d = t / abs(t) if abs(t) > 1e-3 else 1.0
-
-    return d * np.heaviside(x - 1.0 + abs(t), 1.0)
+from pixel_sim import shapes
 
 
 def polygon_under_graph(x, y):
@@ -22,16 +16,10 @@ def polygon_under_graph(x, y):
     return [(x[0], 0.0), *zip(x, y), (x[-1], 0.0)]
 
 
-def create_shape_map():
+def create_shape_map(is_reversed: bool = False, name: str = "wipe"):
     # https://matplotlib.org/stable/gallery/mplot3d/polys3d.html#sphx-glr-gallery-mplot3d-polys3d-py
     x = np.linspace(0, 1.0, num=51)
     t = np.linspace(-1.0, 1.0, num=21)
-
-    # verts = [
-    #     polygon_under_graph(x, np.sin(2.0 * np.pi * 1.0 * t_i - np.pi * x)) for t_i in t
-    # ]
-
-    # verts = [polygon_under_graph(x, wipe(x, t_i)) for t_i in t]
 
     ax = plt.figure().add_subplot(projection="3d")
     colormap = plt.colormaps["Spectral"]
@@ -40,8 +28,16 @@ def create_shape_map():
     # poly = PolyCollection(verts, facecolors=facecolors, alpha=0.7)
     # ax.add_collection3d(poly, zs=t, zdir="y")
 
+    if name == "quad":
+        f = lambda x, t: shapes.wipe(x, t, "quad")
+    else:
+        f = lambda x, t: shapes.wipe(x, t)
+
     for t_i in t:
-        z = wipe(x, t_i)
+        if is_reversed:
+            z = f(1.0 - x, t_i)
+        else:
+            z = f(x, t_i)
         ax.plot(x, t_i * np.ones_like(x), z, color=colormap(t_i / 2 + 0.5))
 
     ax.set(
@@ -51,6 +47,7 @@ def create_shape_map():
         xlabel="x",
         ylabel="t",
         zlabel="intensity",
+        title=name,
     )
 
     plt.show()
