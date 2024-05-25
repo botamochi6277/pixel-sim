@@ -29,3 +29,14 @@ def wipe(x: np.ndarray, t: float, name: str = "heviside"):
         return d * f(x - a)
     a = remap((1.0 - abs(t)), 0.0, 1.0, -0.1, 1.1)
     return d * np.heaviside(x - a, 1.0)
+
+
+def pulse(x: np.ndarray, t: float, name: str = ""):
+    d = t / abs(t) if abs(t) > 1e-3 else 1.0
+    width = 0.1
+    a = remap((1.0 - abs(t)), 0.0, 1.0, -width, 1.0 + width)
+
+    f1 = np.vectorize(lambda x: easeInOutQuad(x + width, width))
+    f2 = np.vectorize(lambda x: -1.0 * easeInOutQuad(x - width, width))
+    y = d * (f1(x - a) + f2(x - a))
+    return y

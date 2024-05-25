@@ -22,13 +22,15 @@ def create_shape_map(is_reversed: bool = False, name: str = "wipe"):
     t = np.linspace(-1.0, 1.0, num=21)
 
     ax = plt.figure().add_subplot(projection="3d")
-    colormap = plt.colormaps["Spectral"]
+    colormap = plt.colormaps["twilight"]
     # facecolors = plt.colormaps["viridis_r"](np.linspace(0, 1, len(verts)))
 
     # poly = PolyCollection(verts, facecolors=facecolors, alpha=0.7)
     # ax.add_collection3d(poly, zs=t, zdir="y")
 
-    if name == "quad":
+    if name == "pulse":
+        f = lambda x, t: shapes.pulse(x, t)
+    elif name == "quad":
         f = lambda x, t: shapes.wipe(x, t, "quad")
     else:
         f = lambda x, t: shapes.wipe(x, t)
