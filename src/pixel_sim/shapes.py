@@ -24,8 +24,9 @@ def wipe(x: np.ndarray, t: float, name: str = "heviside"):
     d = t / abs(t) if abs(t) > 1e-3 else 1.0
 
     if name == "quad":
-        a = remap((1.0 - abs(t)), 0.0, 1.0, -0.15, 1.15)
-        f = np.vectorize(lambda x: easeInOutQuad(x, 0.1))
+        duration = 0.25
+        a = remap((1.0 - abs(t)), 0.0, 1.0, -1 * duration, 1.0)
+        f = np.vectorize(lambda x: easeInOutQuad(x, duration))
         return d * f(x - a)
     a = remap((1.0 - abs(t)), 0.0, 1.0, -0.1, 1.1)
     return d * np.heaviside(x - a, 1.0)
@@ -40,3 +41,17 @@ def pulse(x: np.ndarray, t: float, name: str = ""):
     f2 = np.vectorize(lambda x: -1.0 * easeInOutQuad(x - width, width))
     y = d * (f1(x - a) + f2(x - a))
     return y
+
+
+def saw_wave(x: np.ndarray, period: float = 1.0):
+    xx = x / (period + 1e-9)
+    return xx - np.floor(xx + 0.5) + 0.5
+
+
+def wave(x: np.ndarray, t: float, name: str = "sin"):
+    d = t / abs(t) if abs(t) > 1e-3 else 1.0
+    a = 1.0 - abs(t)
+    if name == "saw":
+        return d * saw_wave(x - a)
+
+    return d * (0.5 * (np.sin(2.0 * np.pi * 1.0 * (x - a))) + 0.5)
