@@ -10,6 +10,13 @@ class SpectrumParam(NamedTuple):
     f: list[float]
 
 
+class SineWaveParam(NamedTuple):
+    amp: float
+    offset: float
+    angular_freq: float
+    init_phase: float  # initial phase
+
+
 def compute_cyclic_param(
     red: np.ndarray, green: np.ndarray, blue: np.ndarray, order: int = 4
 ):
@@ -111,3 +118,13 @@ def compute_poly_color(
     blue[blue > 1.0] = 1.0
     blue[blue < 0.0] = 0.0
     return red, green, blue
+
+
+def compute_sine_params_from_colors(
+    color1: tuple[float, float, float], color2: tuple[float, float, float]
+):
+    amps = [0.5 * (color1[i] - color2[i]) for i in range(3)]
+    return [
+        SineWaveParam(amps[i], 0.5 * (color1[i] + color2[i]), 2 * np.pi, np.pi / 2)
+        for i in range(3)
+    ]
