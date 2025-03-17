@@ -7,14 +7,29 @@ from scipy.optimize import curve_fit
 
 class SpectrumParam(NamedTuple):
     z: list[np.complex128]
-    f: list[float]
+    f: list[float]  # Hz
 
 
 class SineWaveParam(NamedTuple):
-    amp: float
-    offset: float
-    angular_freq: float
-    init_phase: float  # initial phase
+    amp: list[float]
+    freq: list[float]
+    init_phase: list[float]
+
+    offset: float  # direct current factor
+
+    @classmethod
+    def from_spectrum(cls, spectrum: SpectrumParam):
+
+        offset = spectrum.z[0].real
+        amp = [0.0] * (len(spectrum.z) - 1)
+        phase = [0.0] * (len(spectrum.z) - 1)
+        for i in range(len(spectrum.z) - 1):
+            a = -spectrum.z[i + 1].real
+            b = spectrum.z[i + 1].imag
+
+            amp[i] = float(abs(spectrum.z[i + 1]))
+            phase[i] = np.arctan2(a, b) + np.pi
+        return cls(amp, spectrum.f[1:], phase, offset)
 
 
 def compute_cyclic_param(
@@ -25,7 +40,7 @@ def compute_cyclic_param(
     t = np.linspace(0, 1.0, num=num)
     # compute values in freq space
     freq = np.fft.fftfreq(num, d=t[1])
-
+    # https://numpy.org/doc/2.1/reference/generated/numpy.fft.fft.html#numpy.fft.fft
     r_fft = np.fft.fft(red)
     r_amp = abs(r_fft / (num * 0.5))
 
@@ -43,6 +58,7 @@ def compute_cyclic_param(
     r_fft[0] *= 0.5
     g_fft[0] *= 0.5
     b_fft[0] *= 0.5
+
     return (
         SpectrumParam(r_fft[r_order[:order]] / (num * 0.5), freq[r_order[:order]]),
         SpectrumParam(g_fft[g_order[:order]] / (num * 0.5), freq[g_order[:order]]),
@@ -95,6 +111,23 @@ def compute_cyclic_color(
     return red, green, blue
 
 
+def compute_sine_color(
+    sine_params: tuple[SineWaveParam, SineWaveParam, SineWaveParam], num: int = 101
+):
+    t = np.linspace(0, 1.0, num=num)
+    rgb = np.zeros((num, 3))
+    for channel_idx in range(3):
+        param = sine_params[channel_idx]
+        rgb[:, channel_idx] += param.offset
+        for j in range(len(param.amp)):
+            rgb[:, channel_idx] += param.amp[j] * np.sin(
+                2.0 * np.pi * param.freq[j] * t + param.init_phase[j]
+            )
+    rgb[rgb > 1.0] = 1.0
+    rgb[rgb < 0.0] = 0.0
+    return rgb[:, 0], rgb[:, 1], rgb[:, 2]
+
+
 def compute_poly_color(
     poly_params: tuple[np.ndarray, np.ndarray, np.ndarray], num: int = 101
 ):
@@ -125,6 +158,6 @@ def compute_sine_params_from_colors(
 ):
     amps = [0.5 * (color1[i] - color2[i]) for i in range(3)]
     return [
-        SineWaveParam(amps[i], 0.5 * (color1[i] + color2[i]), 2 * np.pi, np.pi / 2)
+        SineWaveParam([amps[i]], [1.0], [np.pi / 2], 0.5 * (color1[i] + color2[i]))
         for i in range(3)
     ]
