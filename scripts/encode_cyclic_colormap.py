@@ -6,7 +6,7 @@ from fire import Fire
 from matplotlib.axes import Axes
 
 import pixel_sim
-import pixel_sim.colormaps
+from pixel_sim.colormaps import COLORMAP_SAMPLES
 from PIL import ImageColor
 
 from pathlib import Path
@@ -16,8 +16,8 @@ def encode_cyclic_colormap(cmap_name: str, num: int = 101, show: bool = False):
     print(f"encoding {cmap_name} ...")  # ['twilight', 'twilight_shifted', 'hsv']
     t = np.linspace(0.0, 1.0, num=num)
 
-    if cmap_name in pixel_sim.colormaps.COLORMAP_SAMPLES:
-        colors = pixel_sim.colormaps.COLORMAP_SAMPLES[cmap_name]
+    if cmap_name in COLORMAP_SAMPLES:
+        colors = COLORMAP_SAMPLES[cmap_name]
         rgb1 = np.array(ImageColor.getcolor(colors[0], "RGB")) / 255
         rgb2 = np.array(ImageColor.getcolor(colors[1], "RGB")) / 255
         params = pixel_sim.analysis.compute_sine_params_from_colors(rgb1, rgb2)
@@ -77,5 +77,21 @@ def encode_cyclic_colormap(cmap_name: str, num: int = 101, show: bool = False):
         )
 
 
+def encode_cyclic_colormaps(cmap_names: str, num: int = 101, show: bool = False):
+
+    if cmap_names == "all":
+
+        targets = ["twilight", "twilight_shifted", "hsv"] + list(
+            COLORMAP_SAMPLES.keys()
+        )
+
+        for cmap_name in targets:
+            encode_cyclic_colormap(cmap_name, num, show)
+        return
+
+    for cmap_name in cmap_names.split(","):
+        encode_cyclic_colormap(cmap_name, num, show)
+
+
 if __name__ == "__main__":
-    Fire(encode_cyclic_colormap)
+    Fire(encode_cyclic_colormaps)
