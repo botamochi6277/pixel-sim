@@ -12,7 +12,7 @@ from PIL import ImageColor
 from pathlib import Path
 
 
-def encode_cyclic_colormap(cmap_name: str, num: int = 101, min_lumi: float = 0.5):
+def encode_cyclic_colormap(cmap_name: str, num: int = 101, show: bool = False):
     print(f"encoding {cmap_name} ...")  # ['twilight', 'twilight_shifted', 'hsv']
     t = np.linspace(0.0, 1.0, num=num)
 
@@ -61,7 +61,20 @@ def encode_cyclic_colormap(cmap_name: str, num: int = 101, min_lumi: float = 0.5
     img_path = Path(__file__).parent.joinpath(f"../assets/{cmap_name}.png")
     fig.savefig(img_path)
     # fig.show()
-    plt.show()
+    if show:
+        plt.show()
+
+    dst_path = Path(__file__).parent.joinpath(f"../assets/{cmap_name}.json")
+    with open(dst_path, "w") as f:
+        json.dump(
+            dict(
+                red=params[0].to_dict(),
+                green=params[1].to_dict(),
+                blue=params[2].to_dict(),
+            ),
+            f,
+            indent=4,
+        )
 
 
 if __name__ == "__main__":

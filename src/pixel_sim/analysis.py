@@ -20,16 +20,21 @@ class SineWaveParam(NamedTuple):
     @classmethod
     def from_spectrum(cls, spectrum: SpectrumParam):
 
-        offset = spectrum.z[0].real
+        offset = float(spectrum.z[0].real)
         amp = [0.0] * (len(spectrum.z) - 1)
         phase = [0.0] * (len(spectrum.z) - 1)
         for i in range(len(spectrum.z) - 1):
-            a = -spectrum.z[i + 1].real
-            b = spectrum.z[i + 1].imag
+            a = spectrum.z[i + 1].real
+            b = -spectrum.z[i + 1].imag
 
             amp[i] = float(abs(spectrum.z[i + 1]))
-            phase[i] = np.arctan2(a, b) + np.pi
+            phase[i] = float(np.arctan2(a, b))
         return cls(amp, spectrum.f[1:], phase, offset)
+
+    def to_dict(self):
+        return dict(
+            amp=self.amp, freq=self.freq, init_phase=self.init_phase, offset=self.offset
+        )
 
 
 def compute_cyclic_param(
@@ -60,9 +65,18 @@ def compute_cyclic_param(
     b_fft[0] *= 0.5
 
     return (
-        SpectrumParam(r_fft[r_order[:order]] / (num * 0.5), freq[r_order[:order]]),
-        SpectrumParam(g_fft[g_order[:order]] / (num * 0.5), freq[g_order[:order]]),
-        SpectrumParam(b_fft[b_order[:order]] / (num * 0.5), freq[b_order[:order]]),
+        SpectrumParam(
+            (r_fft[r_order[:order]] / (num * 0.5)).tolist(),
+            (freq[r_order[:order]]).tolist(),
+        ),
+        SpectrumParam(
+            (g_fft[g_order[:order]] / (num * 0.5)).tolist(),
+            freq[g_order[:order]].tolist(),
+        ),
+        SpectrumParam(
+            (b_fft[b_order[:order]] / (num * 0.5)).tolist(),
+            freq[b_order[:order]].tolist(),
+        ),
     )
 
 
