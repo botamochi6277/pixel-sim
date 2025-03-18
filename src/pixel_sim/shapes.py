@@ -18,34 +18,35 @@ def easeInOutQuad(x: float, duration: float = 1.0):
         return 1.0
 
 
-def wipe(x: np.ndarray, t: float, name: str = "heviside"):
+def wipe(t: float, x: np.ndarray, name: str = "heviside"):
     # https://numpy.org/doc/stable/reference/generated/numpy.heaviside.html
-
-    d = t / abs(t) if abs(t) > 1e-3 else 1.0
-
+    delta = 0.01
     if name == "quad":
         duration = 0.25
-        a = remap((1.0 - abs(t)), 0.0, 1.0, -1 * duration, 1.0)
+        # a = remap((1.0 - abs(t)), 0.0, 1.0, -1 * duration, 1.0)
         f = np.vectorize(lambda x: easeInOutQuad(x, duration))
-        return d * f(x - a)
-    a = remap((1.0 - abs(t)), 0.0, 1.0, -0.1, 1.1)
-    return d * np.heaviside(x - a, 1.0)
+        return 1.0 * f((t) - (x / (1.0 + 2 * duration)))
+    # a = remap((1.0 - abs(t)), 0.0, 1.0, -0.1, 1.1)
+
+    return np.heaviside((t - delta) - (x / (1.0 + 2 * delta)), 1.0)
 
 
-def pulse(x: np.ndarray, t: float, name: str = ""):
-    d = t / abs(t) if abs(t) > 1e-3 else 1.0
-    width = 0.1
-    a = remap((1.0 - abs(t)), 0.0, 1.0, -width, 1.0 + width)
+def pulse(t: np.ndarray, x: np.ndarray, name: str = "", width: float = 0.1):
 
-    f1 = np.vectorize(lambda x: easeInOutQuad(x + width, width))
-    f2 = np.vectorize(lambda x: -1.0 * easeInOutQuad(x - width, width))
-    y = d * (f1(x - a) + f2(x - a))
+    f1 = np.vectorize(lambda x: easeInOutQuad(x + width / 2, width / 2))
+    f2 = np.vectorize(lambda x: -1.0 * easeInOutQuad(x - width / 2, width / 2))
+    v = 1.0 + 3.5 * width
+    y = 1.0 * (f1((t - width) - x / v) + f2((t - width) - x / v))
     return y
 
 
-def saw_wave(x: np.ndarray, period: float = 1.0):
-    xx = x / (period + 1e-9)
-    return xx - np.floor(xx + 0.5) + 0.5
+def saw_wave(t: np.ndarray, x: np.ndarray):
+    v = 1.001
+    return np.ceil(t - x / v) - (t - x / v)
+
+
+def sin_wave(t: np.ndarray, x: np.ndarray):
+    return 0.5 * (np.sin(2.0 * np.pi * 1.0 * (t - x))) + 0.5
 
 
 def wave(x: np.ndarray, t: float, name: str = "sin"):
