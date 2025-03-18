@@ -87,13 +87,13 @@ def encode_mono_colormap(
 
     pixel_sim.plotting.plot_color_ribbon(t, r, g, b, ax=axes[1])
 
-    img_path = Path(__file__).parent.joinpath(f"../assets/{cmap_name}.png")
+    img_path = Path(__file__).parent.joinpath(f"../assets/diverging/{cmap_name}.png")
     fig.savefig(img_path)
     # fig.show()
     if show:
         plt.show()
 
-    dst_path = Path(__file__).parent.joinpath(f"../assets/{cmap_name}.json")
+    dst_path = Path(__file__).parent.joinpath(f"../assets/diverging/{cmap_name}.json")
     with open(dst_path, "w") as f:
         json.dump(
             dst_data,
