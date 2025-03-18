@@ -14,3 +14,18 @@ COLORMAP_SAMPLES = {
     # https://uigradients.com/#Peach
     "Peach": ("#ED4264", "#FFEDBC"),
 }
+
+COLORMAP_DIVERGING = {
+    # https://uigradients.com/#JShine
+    "JShine": ("#12c2e9", "#c471ed", "#f64f59"),
+    # https://uigradients.com/#Argon
+    "Argon": ("#7303c0", "#ffffff", "#f64f59"),
+    # https://uigradients.com/#Relay
+    "Relay": ("#3A1Cf0", "#D76Dd7", "#FFAF7B"),
+    # https://uigradients.com/#Alihossein
+    "Alihossein": ("#f7ff00", "#ffffff", "#db36a4"),
+    # https://uigradients.com/#BaCKToEarth
+    "BackToEarth": ("#00C9FF", "#ffffff", "#92FE9D"),
+    "coolwarm": ("#0000ff", "#ffffff", "#ff0000"),
+    "Iris": ("#aa00ff", "#ffffff", "#ffff00"),
+}

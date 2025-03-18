@@ -55,8 +55,6 @@ def encode_cyclic_colormap(cmap_name: str, num: int = 101, show: bool = False):
     axes[0].set_xlim([-0.05, 1.05])
 
     pixel_sim.plotting.plot_color_ribbon(t, r, g, b, ax=axes[1])
-    # axes[1].set_title(f"decode (target)")
-    plt.tight_layout()
 
     img_path = Path(__file__).parent.joinpath(f"../assets/{cmap_name}.png")
     fig.savefig(img_path)

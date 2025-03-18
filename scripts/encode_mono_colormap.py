@@ -6,65 +6,100 @@ from fire import Fire
 from matplotlib.axes import Axes
 
 import pixel_sim
+from pixel_sim.colormaps import COLORMAP_DIVERGING
+from pathlib import Path
+from PIL import ImageColor
+from matplotlib.colors import LinearSegmentedColormap
 
 
-def encode_mono_colormap(cmap_name: str, num: int = 101, min_lumi: float = 0.5):
-    print(f"encoding {cmap_name} ...")  # ['twilight', 'twilight_shifted', 'hsv']
-    r_cmap, g_cmap, b_cmap = pixel_sim.color.get_color_of_colormap(cmap_name, num=num)
-    poly_params = pixel_sim.analysis.compute_poly_param(r_cmap, g_cmap, b_cmap)
+def encode_mono_colormap(
+    cmap_name: str,
+    num: int = 101,
+    order: int = 4,
+    show: bool = False,
+):
+    print(f"encoding {cmap_name} ...")  # ['Spectral', 'coolwarm', 'bwr']
+    t = np.linspace(0.0, 1.0, num=num)
+    if cmap_name in COLORMAP_DIVERGING:
+        colors = COLORMAP_DIVERGING[cmap_name]
+        rgb1 = np.array(ImageColor.getcolor(colors[0], "RGB")) / 255
+        rgb2 = np.array(ImageColor.getcolor(colors[1], "RGB")) / 255
+        rgb3 = np.array(ImageColor.getcolor(colors[2], "RGB")) / 255
+        cdict = {
+            "red": [
+                (0.0, rgb1[0], rgb1[0]),
+                (0.5, rgb2[0], rgb2[0]),
+                (1.0, rgb3[0], rgb3[0]),
+            ],
+            "green": [
+                (0.0, rgb1[1], rgb1[1]),
+                (0.5, rgb2[1], rgb2[1]),
+                (1.0, rgb3[1], rgb3[1]),
+            ],
+            "blue": [
+                (0.0, rgb1[2], rgb1[2]),
+                (0.5, rgb2[2], rgb2[2]),
+                (1.0, rgb3[2], rgb3[2]),
+            ],
+        }
+        cmap = LinearSegmentedColormap(cmap_name, cdict)
+        rgba = cmap(t)
+        poly_params = pixel_sim.analysis.compute_poly_param(
+            rgba[:, 0], rgba[:, 1], rgba[:, 2], order=order
+        )
+
+    else:
+        r_cmap, g_cmap, b_cmap = pixel_sim.color.get_color_of_colormap(
+            cmap_name, num=num
+        )
+        poly_params = pixel_sim.analysis.compute_poly_param(
+            r_cmap, g_cmap, b_cmap, order
+        )
 
     print(f"encoding completed")
+
+    dst_data = {
+        "name": cmap_name,
+        "type": "poly",
+        "red": poly_params[0].tolist(),
+        "green": poly_params[1].tolist(),
+        "blue": poly_params[2].tolist(),
+    }
+
     r, g, b = pixel_sim.analysis.compute_poly_color(poly_params, num=num)
 
     fig, axes = plt.subplots(
-        nrows=3, ncols=2, sharex="col", sharey="row", height_ratios=(1, 0.25, 0.25)
+        nrows=2,
+        ncols=1,
+        sharex="col",
+        sharey="row",
+        layout="tight",
+        figsize=(600 / 72, 200 / 72),
     )
 
     axes: list[list[Axes]]
     t = np.linspace(0.0, 1.0, num=num)
-    pixel_sim.plotting.plot_rgb_curve(t, r, g, b, ax=axes[0][0], show_legend=False)
-    # axes[0][0].legend(bbox_to_anchor=(1.05, 1), loc="upper left")
-    axes[0][0].set_title(f"{cmap_name}-decode")
-    axes[0][0].set_ylim((-0.1, 1.1))
+    pixel_sim.plotting.plot_rgb_curve(t, r, g, b, ax=axes[0], show_legend=False)
+    axes[0].legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+    axes[0].set_title(f"{cmap_name}")
+    axes[0].set_ylim((-0.1, 1.1))
+    axes[0].set_xlim([-0.05, 1.05])
 
-    pixel_sim.plotting.plot_color_ribbon(t, r, g, b, ax=axes[1][0])
-    axes[1][0].set_title(f"decode (target)")
-    # axes[1].set_aspect(0.05)
+    pixel_sim.plotting.plot_color_ribbon(t, r, g, b, ax=axes[1])
 
-    # screen
-    scale = 0.5
-    white = np.ones_like(r) * scale
-    r_scr = pixel_sim.color.apply_screen(white, r)
-    g_scr = pixel_sim.color.apply_screen(white, g)
-    b_scr = pixel_sim.color.apply_screen(white, b)
-    pixel_sim.plotting.plot_color_ribbon(t, r_scr, g_scr, b_scr, ax=axes[2][0])
-    axes[2][0].set_title(f"screen")
-
-    # rescale?
-    luminance_cmap = pixel_sim.color.compute_luminance(r_cmap, g_cmap, b_cmap)
-    scale = (1.0 - min_lumi) / (1.0 - luminance_cmap.min())
-    r2 = (r_cmap - 1.0) * scale + 1.0
-    g2 = (g_cmap - 1.0) * scale + 1.0
-    b2 = (b_cmap - 1.0) * scale + 1.0
-    pixel_sim.plotting.plot_rgb_curve(t, r2, g2, b2, ax=axes[0][1], show_legend=True)
-    axes[0][1].set_title(f"tuned")
-
-    pixel_sim.plotting.plot_color_ribbon(t, r2, g2, b2, ax=axes[1][1])
-    axes[1][1].set_title(f"tuned")
-
-    # re-screen
-    r_re = pixel_sim.color.apply_screen(white, r2)
-    g_re = pixel_sim.color.apply_screen(white, g2)
-    b_re = pixel_sim.color.apply_screen(white, b2)
-    pixel_sim.plotting.plot_color_ribbon(t, r_re, g_re, b_re, ax=axes[2][1])
-    axes[2][1].set_title(f"tuned-screen")
-
-    axes[-1][0].set_xlim([-0.05, 1.05])
-    axes[-1][1].set_xlim([-0.05, 1.05])
-
-    plt.tight_layout()
+    img_path = Path(__file__).parent.joinpath(f"../assets/{cmap_name}.png")
+    fig.savefig(img_path)
     # fig.show()
-    plt.show()
+    if show:
+        plt.show()
+
+    dst_path = Path(__file__).parent.joinpath(f"../assets/{cmap_name}.json")
+    with open(dst_path, "w") as f:
+        json.dump(
+            dst_data,
+            f,
+            indent=4,
+        )
 
 
 if __name__ == "__main__":
